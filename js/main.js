@@ -3,12 +3,13 @@
  * University College of West-Flanders, Department GKG
  * 
  */
-var endpoint = "http://localhost:5000/api/list?apiKey=<insert a SHA-512 of a piece of text here>"
+var endpoint = "http://localhost:5000";
+var apiKey = "<insert a SHA-512 of a piece of text here>";
 var systemInformations = [];
 var newSystemInformationsCount = 0;
 var collapsed = true;
 //Templating without a template engine.
-var template = "<div class=\"si\" id=\"si{{}}\"><div class=\"siHeader\"><button class=\"btn\" id=\"siToggleCollapse{{}}\">></button>&nbsp;<label id=\"siHostname{{}}\"></label>&nbsp;<span id=\"siIPs{{}}\"></span><span id=\"siTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siBody{{}}\"><ul><li id=\"siOS{{}}\"></li><li id=\"siSystem{{}}\"> </li><li id=\"siBaseboard{{}}\"> </li><li id=\"siBios{{}}\"> </li><li id=\"siProcessors{{}}\"> </li><li id=\"siMemoryModules{{}}\"></li><li id=\"siDisks{{}}\"> </li><li id=\"siNics{{}}\"> </li></ul></div></div>";
+var template = "<div class=\"si\" id=\"si{{}}\"><div class=\"siHeader\"><button class=\"btn\" id=\"siToggleCollapse{{}}\">></button>&nbsp;<label id=\"siHostname{{}}\"></label>&nbsp;<span id=\"siIPs{{}}\"></span><span id=\"siTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siBody{{}}\"><ul><li id=\"siOS{{}}\"></li><li id=\"siSystem{{}}\"> </li><li id=\"siBaseboard{{}}\"> </li><li id=\"siBios{{}}\"> </li><li id=\"siProcessors{{}}\"> </li><li id=\"siMemoryModules{{}}\"></li><li id=\"siDisks{{}}\"> </li><li id=\"siNics{{}}\"> </li></ul><button class=\"btn btn-default\" id=\"remove{{}}\"><img src=\"img/remove.png\" /></button></div></div>";
 
 var systemInformation = function (siJson) {
     var _me = this;
@@ -31,6 +32,8 @@ var systemInformation = function (siJson) {
     var _siMemoryModules = "#siMemoryModules" + newSystemInformationsCount;
     var _siDisks = "#siDisks" + newSystemInformationsCount;
     var _siNics = "#siNics" + newSystemInformationsCount;
+
+    var _btnRemove = '#remove' + newSystemInformationsCount;
 
 
     $('#container').append(template.replace(/{{}}/g, newSystemInformationsCount));
@@ -63,7 +66,7 @@ var systemInformation = function (siJson) {
         return _hostname;
     };
 
-    this.collapsed = function(){
+    this.collapsed = function () {
         return !$(_siBody).is(':visible');
     };
     this.collapse = function () {
@@ -84,14 +87,26 @@ var systemInformation = function (siJson) {
         }
     });
 
+    $(_btnRemove).click(function () {
+        systemInformations = jQuery.grep(systemInformations, function (value) {
+            return value != _me;
+        });
+        $(_si).remove();
+
+        $.ajax({
+            url: endpoint + "/api/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
+            type: 'DELETE'
+        });
+
+    });
+
     this.collapse();
     this.updateInfo(siJson);
 };
 
-
 var refresh = function () {
     //Add or update the info on the GUI.
-    $.getJSON(endpoint, function (data) {
+    $.getJSON(endpoint + "/api/list?apiKey=" + apiKey, function (data) {
         $.each(data, function (i, siJson) {
             addOrUpdateSystemInformation(siJson);
         });
