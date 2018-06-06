@@ -3,7 +3,8 @@
  * University College of West-Flanders, Department GKG
  * 
  */
-var endpoint = "http://localhost:5000";
+var endpoint = "http://localhost:5000/systeminformations"; //New dotnet framework api (includes VMware vHost hw monitoring)
+//var endpoint = "http://localhost:5000/api"; // dotnetcore api
 var apiKey = "<insert a SHA-512 of a piece of text here>";
 var systemInformations = [];
 var newSystemInformationsCount = 0;
@@ -94,7 +95,7 @@ var systemInformation = function (siJson) {
         $(_si).remove();
 
         $.ajax({
-            url: endpoint + "/api/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
+            url: endpoint + "/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
             type: 'DELETE'
         });
 
@@ -106,7 +107,7 @@ var systemInformation = function (siJson) {
 
 var refresh = function () {
     //Add or update the info on the GUI.
-    $.getJSON(endpoint + "/api/list?apiKey=" + apiKey, function (data) {
+    $.getJSON(endpoint + "/list?apiKey=" + apiKey, function (data) {
         $.each(data, function (i, siJson) {
             addOrUpdateSystemInformation(siJson);
         });

@@ -21,7 +21,9 @@ main(.min).js contains all communication to the API using AJAX. It also updates 
 ## Configure
 
 ### main(.min).js
-    endpoint="http://localhost:5000/api/list?apiKey=<insert a SHA-512 of a piece of text here>"
+    var endpoint = "http://localhost:5000/systeminformations"; //New dotnet framework api (includes VMware vHost hw monitoring)
+    //var endpoint = "http://localhost:5000/api"; // dotnetcore api
+    var apiKey = "<insert a SHA-512 of a piece of text here>";
     
 Set the endpoint directly in the minified js and the unminified version as well, because that is a clean way of working.
 
