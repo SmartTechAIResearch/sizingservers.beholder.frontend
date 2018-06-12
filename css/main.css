@@ -1,5 +1,5 @@
 #menu {
-  background-color: #555;
+  background-color: #234;
 }
 .menuItem {
   color: #fff;
@@ -8,8 +8,22 @@
 }
 #menu button {
   float: right;      
-  margin: 50px 25px 15px 25px;     
+  margin: 50px 10px 15px 5px;     
 }
 .si {
   margin: 20px 25px 15px 25px;  
+}
+#addEditVHost {
+  display: none;
+  background-color: #cfb;
+  padding: 25px;
+}
+#addEditVHost input {
+  margin: 10px;
+}
+#vhGuests {
+  width: 800px;
+}
+#vhGuestContainer {
+  padding: 10px;
 }
