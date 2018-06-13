@@ -1,3 +1,25 @@
+/*Preloader https://medium.com/@kingrayhan/create-a-simple-preloader-with-jquery-c6efb03c7f23*/
+body.preloader-site {
+  overflow: hidden;
+}
+.preloader-wrapper {
+  height: 100%;
+  width: 100%;
+  background: #FFF;
+  opacity: 0.7;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999999;
+}
+.preloader-wrapper .preloader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  width: 120px;
+}
 #menu {
   background-color: #234;
 }
@@ -26,4 +48,8 @@
 }
 #vhGuestContainer {
   padding: 10px;
+}
+li {
+  list-style:none;
+  margin-bottom: 15px;
 }

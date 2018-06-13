@@ -3,8 +3,6 @@
  * University College of West-Flanders, Department GKG
  * 
  */
-//var endpoint = "http://localhost:5000/systeminformations"; //New dotnet framework api (includes VMware vHost hw monitoring)
-//var endpointVMH = "http://localhost:5000/vmwarehosts"
 //var endpoint = "http://localhost:5000/api"; // dotnetcore api
 var endpoint = "http://localhost:28751/systeminformations"; //New dotnet framework api (includes VMware vHost hw monitoring)
 var endpointVH = "http://localhost:28751/vmwarehosts"
@@ -19,7 +17,8 @@ var templateVM = "<div class=\"si\" id=\"si{{}}\"><div class=\"siHeader\"><butto
 
 var vhSystemInformation = function (siVHJson) {
     var _me = this;
-    var _ipOrHostname, _guests;
+    var _ipOrHostname;
+    var _guests = [];
 
     //Templating without a template engine.
     ++newSystemInformationsCount;
@@ -41,14 +40,13 @@ var vhSystemInformation = function (siVHJson) {
     var _btnVHEdit = '#vhEdit' + newSystemInformationsCount;
     var _btnVHRemove = '#vhRemove' + newSystemInformationsCount;
 
-    var vhGuestContainer = '#vhGuestContainer' + newSystemInformationsCount;
-
+    var _vhGuestContainer = '#vhGuestContainer' + newSystemInformationsCount;
 
     $('#container').append(templateVHost.replace(/{{}}/g, newSystemInformationsCount));
 
     this.updateInfo = function (siVHJson) {
         _ipOrHostname = siVHJson['ipOrHostname'];
-        _guests = siVHJson['guestHostnames'].replace(/\t/g, ', ');
+        _guests = siVHJson['guestHostnames'].split('\t');
 
         $(_siVHIpOrHostname).text('VHOST ' + _ipOrHostname);
 
@@ -61,20 +59,25 @@ var vhSystemInformation = function (siVHJson) {
         $(_siVHTimestamp).text('(last updated: ' + ts + ')');
 
 
-        $(_siVHOS).text('OS: ' + siVHJson['os']);
-        $(_siVHSystem).text('System: ' + siVHJson['system']);
-        $(_siVHBios).text('BIOS: ' + siVHJson['bios']);
-        $(_siVHProcessors).text('Processors: ' + siVHJson['processors'].replace(/\t/g, ', ') + ' (Total ' + siVHJson['numCpuCores'] + ' cores, ' + siVHJson['numCpuThreads'] + ' threads)');
-        $(_siVHMemoryInGB).text('Memory: ' + siVHJson['memoryInGB'] + ' GB');
-        $(_siVHDatastores).text('Datastores: ' + siVHJson['datastores'].replace(/\t/g, ', '));
-        $(_siVHDiskPaths).text('Paths: ' + siVHJson['vDiskPaths'].replace(/\t/g, ', '));
-        $(_siVHNics).text('NICs: ' + siVHJson['nics'].replace(/\t/g, ', '));
+        $(_siVHOS).html('OS:&emsp;&emsp;&emsp;&emsp;&nbsp;' + siVHJson['os']);
+        $(_siVHSystem).html('System:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['system']);
+        $(_siVHBios).html('BIOS:&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bios']);
+        $(_siVHProcessors).html('Processors:&emsp;' + siVHJson['processors'].replace(/\t/g, ', ') + ' (total ' + siVHJson['numCpuCores'] + ' cores, ' + siVHJson['numCpuThreads'] + ' threads)');
+        $(_siVHMemoryInGB).html('Memory:&emsp;&emsp;&nbsp;' + siVHJson['memoryInGB'] + ' GB');
+        $(_siVHDatastores).html('Datastores:&emsp;&nbsp;' + siVHJson['datastores'].replace(/\t/g, ', '));
+        $(_siVHDiskPaths).html('Paths:&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['vDiskPaths'].replace(/\t/g, ', '));
+        $(_siVHNics).html('NICs:&emsp;&emsp;&emsp;&emsp;' + siVHJson['nics'].replace(/\t/g, ', '));
     };
 
     this.ipOrHostname = function () {
         return _ipOrHostname;
     };
-
+    this.guests = function () {
+        return _guests;
+    };
+    this.vhGuestContainer = function () {
+        return _vhGuestContainer;
+    };
     this.collapsed = function () {
         return !$(_siVHBody).is(':visible');
     };
@@ -97,16 +100,22 @@ var vhSystemInformation = function (siVHJson) {
     });
 
     $(_btnVHRemove).click(function () {
-        vhSystemInformations = jQuery.grep(vhSystemInformations, function (value) {
-            return value != _me;
-        });
-        $(_siVH).remove();
+        if (confirm('Are you sure that you want to remove this?')) {
+            $('body').addClass('preloader-site');
+            $('.preloader-wrapper').fadeIn();
 
-        $.ajax({
-            url: endpointVH + "/remove?apiKey=" + apiKey + "&ipOrHostname=" + _ipOrHostname,
-            type: 'DELETE'
-        });
+            vhSystemInformations = jQuery.grep(vhSystemInformations, function (value) {
+                return value != _me;
+            });
+            $(_siVH).remove();
 
+            $.ajax({
+                url: endpointVH + "/remove?apiKey=" + apiKey + "&ipOrHostname=" + _ipOrHostname,
+                type: 'DELETE'
+            });
+
+            setTimeout(function () { refresh(); }, 1000);
+        }
     });
 
     $(_btnVHEdit).click(function () {
@@ -114,16 +123,18 @@ var vhSystemInformation = function (siVHJson) {
         $('#vhIpOrHostname').val(_ipOrHostname);
         $('#vhUsername').val('');
         $('#vhPassword').val('');
-        $('#vhGuests').val(_guests);
+        $('#vhGuests').val(_guests.join(', '));
     });
 
     this.collapse();
     this.updateInfo(siVHJson);
 };
 
-var systemInformation = function (siJson) {
+var systemInformation = function (siJson, containerId) {
     var _me = this;
     var _hostname;
+    var _containerId = containerId;
+    var _instance;
 
     //Templating without a template engine.
     ++newSystemInformationsCount;
@@ -146,9 +157,17 @@ var systemInformation = function (siJson) {
     var _btnRemove = '#remove' + newSystemInformationsCount;
 
 
-    $('#container').append(templateVM.replace(/{{}}/g, newSystemInformationsCount));
+    _instance = templateVM.replace(/{{}}/g, newSystemInformationsCount);
+    $(containerId).append(_instance);
 
-    this.updateInfo = function (siJson) {
+    this.updateInfo = function (siJson, containerId) {
+
+        if (_containerId != containerId) {
+            $(_si).detach();
+            $(containerId).append(_instance);
+            _containerId = containerId;
+        }
+
         _hostname = siJson['hostname'];
         $(_siHostname).text(_hostname);
         $(_siIPs).text(siJson['ips'].replace(/\t/g, ', '));
@@ -162,14 +181,14 @@ var systemInformation = function (siJson) {
         $(_siTimestamp).text('(last updated: ' + ts + ')');
 
 
-        $(_siOS).text('OS: ' + siJson['os']);
-        $(_siSystem).text('System: ' + siJson['system']);
-        $(_siBaseboard).text('Baseboard: ' + siJson['baseboard']);
-        $(_siBios).text('BIOS: ' + siJson['bios']);
-        $(_siProcessors).text('Processors: ' + siJson['processors'].replace(/\t/g, ', '));
-        $(_siMemoryModules).text('Memory modules: ' + siJson['memoryModules'].replace(/\t/g, ','));
-        $(_siDisks).text('Disks: ' + siJson['disks'].replace(/\t/g, ', '));
-        $(_siNics).text('NICs: ' + siJson['nics'].replace(/\t/g, ', '));
+        $(_siOS).html('OS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['os']);
+        $(_siSystem).html('System:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['system']);
+        $(_siBaseboard).html('Baseboard:&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;' + siJson['baseboard']);
+        $(_siBios).html('BIOS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;' + siJson['bios']);
+        $(_siProcessors).html('Processors:&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['processors'].replace(/\t/g, ', '));
+        $(_siMemoryModules).html('Memory modules:&emsp;' + siJson['memoryModules'].replace(/\t/g, ','));
+        $(_siDisks).html('Disks:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['disks'].replace(/\t/g, ', '));
+        $(_siNics).html('NICs:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siJson['nics'].replace(/\t/g, ', '));
     };
 
     this.hostname = function () {
@@ -198,20 +217,21 @@ var systemInformation = function (siJson) {
     });
 
     $(_btnRemove).click(function () {
-        systemInformations = jQuery.grep(systemInformations, function (value) {
-            return value != _me;
-        });
-        $(_si).remove();
+        if (confirm('Are you sure that you want to remove this?')) {
+            systemInformations = jQuery.grep(systemInformations, function (value) {
+                return value != _me;
+            });
+            $(_si).remove();
 
-        $.ajax({
-            url: endpoint + "/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
-            type: 'DELETE'
-        });
-
+            $.ajax({
+                url: endpoint + "/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
+                type: 'DELETE'
+            });
+        }
     });
 
     this.collapse();
-    this.updateInfo(siJson);
+    this.updateInfo(siJson, containerId);
 };
 
 var refresh = function () {
@@ -223,26 +243,36 @@ var refresh = function () {
     }).always(function () {
         $.getJSON(endpoint + "/list?apiKey=" + apiKey, function (data) {
             $.each(data, function (i, siJson) {
-                addOrUpdateSystemInformation(siJson);
+                var hostname = siJson['hostname'];
+                var containerId = '#container';
+                $.each(vhSystemInformations, function (j, vhSI) {
+                    if ($.inArray(hostname, vhSI.guests()) != -1) {
+                        containerId = vhSI.vhGuestContainer();
+                        return false; //break
+                    }
+                });
+                addOrUpdateSystemInformation(siJson, containerId);
             });
         }).always(function () {
             sortSystemInformationByHostname();
+            $('.preloader-wrapper').fadeOut();
+            $('body').removeClass('preloader-site');
         })
     });
 };
 
-var addOrUpdateSystemInformation = function (siJson) {
+var addOrUpdateSystemInformation = function (siJson, containerId) {
     var si = null;
     $.each(systemInformations, function (i, siCandidate) {
         if (siCandidate.hostname() == siJson['hostname']) {
             si = siCandidate;
-            si.updateInfo(siJson);
+            si.updateInfo(siJson, containerId);
             return false;
         }
     });
 
     if (si == null) {
-        systemInformations.push(new systemInformation(siJson));
+        systemInformations.push(new systemInformation(siJson, containerId));
     }
 };
 
@@ -290,16 +320,29 @@ var addEditVHost = function () {
         'username': $.trim($('#vhUsername').val()),
         'password': $('#vhPassword').val()
     };
+    if (!vmwareHostConnectionInfo['username'].length) {
+        vmwareHostConnectionInfo['username'] = ".&DO_NOT_UPDATE_Credentials&.";
+        vmwareHostConnectionInfo['password'] = "";
+    }
+    if (vmwareHostConnectionInfo['ipOrHostname'].length) {
+        if (!vmwareHostConnectionInfo['password'].length || 
+        (vmwareHostConnectionInfo['password'].length && confirm('Caution! Credentials will be send over the network. Are you sure that you want to do this?'))) {
+            $('body').addClass('preloader-site');
+            $('.preloader-wrapper').fadeIn();
 
-    $.ajax({
-        url: endpointVH + "/addorupdate?apiKey=" + apiKey,
-        data: JSON.stringify(vmwareHostConnectionInfo),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        type: 'POST'
-    }).success(function () {
-        alert('success');
-    });
+            $.ajax({
+                url: endpointVH + "/addorupdate?apiKey=" + apiKey,
+                data: JSON.stringify(vmwareHostConnectionInfo),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                type: 'POST'
+            }).success(function () {
+                refresh();
+            });
+        }
+    } else {
+        alert('All fields are mandatory, except for guests.');
+    }
 };
 
 var collapse = function () {
@@ -311,10 +354,15 @@ var collapse = function () {
             ++collapsedCount;
         }
     });
+    $.each(vhSystemInformations, function (i, si) {
+        if (si.collapsed()) {
+            ++collapsedCount;
+        }
+    });
 
     if (collapsedCount == 0) {
         collapsed = true;
-    } else if (collapsedCount == systemInformations.length) {
+    } else if (collapsedCount == systemInformations.length + vhSystemInformations.length) {
         collapsed = false;
     }
 
@@ -325,9 +373,19 @@ var collapse = function () {
             si.uncollapse();
         }
     });
+    $.each(vhSystemInformations, function (i, si) {
+        if (collapsed) {
+            si.collapse();
+        } else {
+            si.uncollapse();
+        }
+    });
 };
 
 var main = function () {
+    $('body').addClass('preloader-site');
+    $('.preloader-wrapper').fadeIn();
+
     $('#addvhost').click(function () { $('#addEditVHost').show(); });
     $('#collapse').click(function () { collapse(); });
 
