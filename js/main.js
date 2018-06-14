@@ -316,7 +316,7 @@ var sortSystemInformationByHostname = function () {
 var addEditVHost = function () {
     var vmwareHostConnectionInfo = {
         'ipOrHostname': $.trim($('#vhIpOrHostname').val()),
-        'guestHostnames': $.trim($('#vhGuests').val()).replace(/' '/g, '').replace(/'\t'/g, '').replace(/','/g, '\t'),
+        'guestHostnames': $.trim($('#vhGuests').val()).replace(/ /g, '').replace(/\t/g, '').replace(/,/g, '\t'),
         'username': $.trim($('#vhUsername').val()),
         'password': $('#vhPassword').val()
     };
