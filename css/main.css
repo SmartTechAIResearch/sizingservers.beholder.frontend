@@ -20,6 +20,14 @@ body.preloader-site {
   transform: translate(-50%, -50%);
   width: 120px;
 }
+#header {
+  position: fixed;
+  top: 0px;
+  width: 100%;
+}
+#container {
+  margin-top: 134px;
+}
 #menu {
   background-color: #234;
 }
@@ -43,13 +51,17 @@ body.preloader-site {
 #addEditVHost input {
   margin: 10px;
 }
-#vhGuests {
+#vhVMs {
   width: 800px;
 }
-#vhGuestContainer {
+#vhVMContainer {
   padding: 10px;
 }
 li {
   list-style:none;
   margin-bottom: 15px;
+}
+li ul li {
+  list-style:none;
+  margin-bottom: 5px;
 }
