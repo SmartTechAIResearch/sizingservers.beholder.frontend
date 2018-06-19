@@ -43,8 +43,10 @@ body.preloader-site {
 .si {
   margin: 20px 25px 15px 25px;  
 }
-#addEditVHost {
+.tools {
   display: none;
+}
+#addEditVHost {
   background-color: #cfb;
   padding: 25px;
 }
