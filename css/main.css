@@ -1,3 +1,11 @@
+li {
+  list-style:none;
+  margin-bottom: 15px;
+}
+li ul li {
+  list-style:none;
+  margin-bottom: 5px;
+}
 /*Preloader https://medium.com/@kingrayhan/create-a-simple-preloader-with-jquery-c6efb03c7f23*/
 body.preloader-site {
   overflow: hidden;
@@ -26,7 +34,7 @@ body.preloader-site {
   width: 100%;
 }
 #container {
-  margin-top: 134px;
+  margin-top: 159px;
 }
 #menu {
   background-color: #234;
@@ -40,11 +48,34 @@ body.preloader-site {
   float: right;      
   margin: 50px 10px 15px 5px;     
 }
+#error {
+  padding: 10px;
+  text-align: center;
+  color: orangered;
+  background-color: navajowhite;  
+}
+#errorLabel{
+  margin: auto;
+  font-style: bold;
+  font-size: 18px;
+}
+#errorClose {
+  float: right;
+  width: 18px;
+  margin-right: 15px;
+  cursor: pointer;
+}
 .si {
   margin: 20px 25px 15px 25px;  
 }
 .tools {
   display: none;
+}
+.flatbtn {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin: 1px;
 }
 #addEditVHost {
   background-color: #cfb;
@@ -58,12 +89,4 @@ body.preloader-site {
 }
 #vhVMContainer {
   padding: 10px;
-}
-li {
-  list-style:none;
-  margin-bottom: 15px;
-}
-li ul li {
-  list-style:none;
-  margin-bottom: 5px;
 }

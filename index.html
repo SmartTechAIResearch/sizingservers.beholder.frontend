@@ -10,12 +10,6 @@
     <link rel="stylesheet" type="text/css" href="css/bootstrap.3.3.6.min.css">
     <script type="text/javascript" src="js/jquery-2.2.3.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.3.3.6.min.js"></script>
-    <!--
-    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="
-        crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    -->
     <script type="text/javascript" src="js/main.min.js"></script>
 </head>
 
@@ -32,12 +26,18 @@
                 <label>Hardware inventorization by
                     <a href="https://www.sizingservers.be" target="_blank">Sizing Servers Lab</a>
                     <a href="https://github.com/sizingservers/sizingservers.beholder.frontend" target="_blank">(GitHub)</a>
-                    <label>
-                        &nbsp;
-                        <img src="img/cookie-small.png" title="This tool uses no cookies!" />
+                </label>
+                &nbsp;
+                <img src="img/cookie-small.png" title="This tool uses no cookies!" />
+                <br /> API endpoint:
+                <span id="apiEndpoint">?</span>
             </span>
             <button class="btn btn-default menuItem" id="collapse" type="button">(un)Collapse all</button>
             <button class="btn btn-default-menuItem" id="addvhost" type="button">Add VMware host</button>
+        </div>
+        <div id="error" class="tools">
+            <label id="errorLabel"></label>
+           <img id="errorClose" src="img/times.svg" />
         </div>
         <div id="addEditVHost" class="tools">
             IP or hostname:

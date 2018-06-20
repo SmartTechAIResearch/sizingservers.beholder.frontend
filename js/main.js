@@ -3,17 +3,15 @@
  * University College of West-Flanders, Department GKG
  * 
  */
-//var endpoint = "http://localhost:5000/api"; // dotnetcore api
-var endpoint = "http://localhost:28751/systeminformations"; //New dotnet framework api (includes VMware vHost hw monitoring)
-var endpointVH = "http://localhost:28751/vmwarehosts"
+var endpoint = "http://localhost:28751";
 var apiKey = "<insert a SHA-512 of a piece of text here>";
 var systemInformations = [];
 var vhSystemInformations = [];
 var newSystemInformationsCount = 0;
 var collapsed = true;
 //Templating without a template engine.
-var templateVHost = "<div class=\"si\" id=\"siVH{{}}\"><div class=\"siVHHeader\"><button class=\"btn\" id=\"siVHToggleCollapse{{}}\">></button>&nbsp;<label id=\"siVHIpOrHostname{{}}\"></label>&nbsp;<span id=\"siVHTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siVHBody{{}}\"><ul><li id=\"siVHOS{{}}\"></li><li id=\"siVHSystem{{}}\"> </li><li id=\"siVHBios{{}}\"> </li><li id=\"siVHBmcIp{{}}\"> </li><li id=\"siVHProcessors{{}}\"> </li><li id=\"siVHMemoryInGB{{}}\"></li><li id=\"siVHDatastores{{}}\"></li><li id=\"siVHDiskPaths{{}}\"> </li><li id=\"siVHNics{{}}\"> </li></ul><button class=\"btn btn-default\" id=\"vhEdit{{}}\">...</button>&nbsp;<button class=\"btn btn-default\" id=\"vhRemove{{}}\"><img src=\"img/remove.png\" /></button></div><div class=\"vhVMContainer\" id=\"vhVMContainer{{}}\"></div></div>";
-var templateVM = "<div class=\"si\" id=\"si{{}}\"><div class=\"siHeader\"><button class=\"btn\" id=\"siToggleCollapse{{}}\">></button>&nbsp;<label id=\"siHostname{{}}\"></label>&nbsp;<span id=\"siIPs{{}}\"></span>&nbsp;<span id=\"siTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siBody{{}}\"><ul><li id=\"siOS{{}}\"></li><li id=\"siSystem{{}}\"> </li><li id=\"siBaseboard{{}}\"> </li><li id=\"siBios{{}}\"> </li><li id=\"siBmcIp{{}}\"> </li><li id=\"siProcessors{{}}\"> </li><li id=\"siMemoryModules{{}}\"></li><li id=\"siDisks{{}}\"> </li><li id=\"siNics{{}}\"> </li></ul><button class=\"btn btn-default\" id=\"remove{{}}\"><img src=\"img/remove.png\" /></button></div></div>";
+var templateVHost = "<div class=\"si\" id=\"siVH{{}}\"><div class=\"siVHHeader\"><img class=\"flatbtn\" id=\"siVHToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>&nbsp;<label id=\"siVHIpOrHostname{{}}\"></label>&nbsp;<span id=\"siVHTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siVHBody{{}}\"><ul><li id=\"siVHOS{{}}\"></li><li id=\"siVHSystem{{}}\"> </li><li id=\"siVHBios{{}}\"> </li><li id=\"siVHBmcIp{{}}\"> </li><li id=\"siVHProcessors{{}}\"> </li><li id=\"siVHMemoryInGB{{}}\"></li><li id=\"siVHDatastores{{}}\"></li><li id=\"siVHDiskPaths{{}}\"> </li><li id=\"siVHNics{{}}\"> </li></ul>&emsp;&emsp;&emsp;<img class=\"flatbtn\" id=\"vhEdit{{}}\" src=\"img/ellipsis-h.svg\"></img>&emsp;<image class=\"flatbtn\" id=\"vhRemove{{}}\" src=\"img/trash-alt.svg\"></img></div><div class=\"vhVMContainer\" id=\"vhVMContainer{{}}\"></div></div>";
+var templateVM = "<div class=\"si\" id=\"si{{}}\"><div class=\"siHeader\"><img class=\"flatbtn\" id=\"siToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>&nbsp;<label id=\"siHostname{{}}\"></label>&nbsp;<span id=\"siIPs{{}}\"></span>&nbsp;<span id=\"siTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siBody{{}}\"><ul><li id=\"siOS{{}}\"></li><li id=\"siSystem{{}}\"> </li><li id=\"siBaseboard{{}}\"> </li><li id=\"siBios{{}}\"> </li><li id=\"siBmcIp{{}}\"> </li><li id=\"siProcessors{{}}\"> </li><li id=\"siMemoryModules{{}}\"></li><li id=\"siDisks{{}}\"> </li><li id=\"siNics{{}}\"> </li></ul>&emsp;&emsp;&nbsp;<img class=\"flatbtn\" id=\"remove{{}}\" src=\"img/trash-alt.svg\"></img></div></div>";
 
 var vhSystemInformation = function (siVHJson) {
     var _me = this;
@@ -97,11 +95,11 @@ var vhSystemInformation = function (siVHJson) {
     };
     this.collapse = function () {
         $(_siVHBody).hide();
-        $(_siVHToggleCollapse).text('>');
+        $(_siVHToggleCollapse).attr('src', 'img/angle-right.svg');
     };
     this.uncollapse = function () {
         $(_siVHBody).show();
-        $(_siVHToggleCollapse).text('V');
+        $(_siVHToggleCollapse).attr('src', 'img/angle-down.svg');
     }
 
     $(_siVHToggleCollapse).click(function () {
@@ -124,7 +122,7 @@ var vhSystemInformation = function (siVHJson) {
             $(_siVH).remove();
 
             $.ajax({
-                url: endpointVH + "/remove?apiKey=" + apiKey + "&ipOrHostname=" + _ipOrHostname,
+                url: endpoint + "/vmwarehosts/remove?apiKey=" + apiKey + "&ipOrHostname=" + _ipOrHostname,
                 type: 'DELETE'
             });
 
@@ -225,11 +223,11 @@ var systemInformation = function (siJson, containerId) {
     };
     this.collapse = function () {
         $(_siBody).hide();
-        $(_siToggleCollapse).text('>');
+        $(_siToggleCollapse).attr('src', 'img/angle-right.svg');
     };
     this.uncollapse = function () {
         $(_siBody).show();
-        $(_siToggleCollapse).text('V');
+        $(_siToggleCollapse).attr('src', 'img/angle-down.svg');
     }
 
     $(_siToggleCollapse).click(function () {
@@ -249,7 +247,7 @@ var systemInformation = function (siJson, containerId) {
             $(_si).remove();
 
             $.ajax({
-                url: endpoint + "/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
+                url: endpoint + "/systeminformations/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
                 type: 'DELETE'
             });
         }
@@ -261,12 +259,12 @@ var systemInformation = function (siJson, containerId) {
 
 var refresh = function () {
     //Add or update the info on the GUI.
-    $.getJSON(endpointVH + "/listsysteminformation?apiKey=" + apiKey, function (data) {
+    $.getJSON(endpoint + "/vmwarehosts/listsysteminformation?apiKey=" + apiKey, function (data) {
         $.each(data, function (i, siVHJson) {
             addOrUpdateVHSystemInformation(siVHJson);
         });
     }).always(function () {
-        $.getJSON(endpoint + "/list?apiKey=" + apiKey, function (data) {
+        $.getJSON(endpoint + "/systeminformations/list?apiKey=" + apiKey, function (data) {
             $.each(data, function (i, siJson) {
                 var hostname = siJson['hostname'];
                 var containerId = '#container';
@@ -356,7 +354,7 @@ var addEditVHost = function () {
             $('.preloader-wrapper').fadeIn();
 
             $.ajax({
-                url: endpointVH + "/addorupdate?apiKey=" + apiKey,
+                url: endpoint + "/vmwarehosts/addorupdate?apiKey=" + apiKey,
                 data: JSON.stringify(vmwareHostConnectionInfo),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -407,6 +405,11 @@ var collapse = function () {
     });
 };
 
+var closeError = function(){
+    $('#error').hide();
+    $('#container').css('margin-top', ($('#header').height() + 20) + 'px' );
+}
+
 var addEditVHostShow = function(){
     $('#addEditVHost').show();
     $('#container').css('margin-top', ($('#header').height() + 20) + 'px' );
@@ -416,8 +419,12 @@ var main = function () {
     $('body').addClass('preloader-site');
     $('.preloader-wrapper').fadeIn();
 
+    $('#apiEndpoint').text(endpoint);
+
     $('#addvhost').click(function () { addEditVHostShow(); });
     $('#collapse').click(function () { collapse(); });
+
+    $('#errorClose').click(function() {closeError();});
 
     $('#vhApply').click(function () { addEditVHost(); });
     $('#vhCancel').click(function () {
