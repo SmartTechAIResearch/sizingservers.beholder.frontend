@@ -55,9 +55,12 @@ body.preloader-site {
   background-color: navajowhite;  
 }
 #errorLabel{
+  white-space: nowrap; 
   margin: auto;
   font-style: bold;
   font-size: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis; 
 }
 #errorClose {
   float: right;

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sizing Servers Lab - Beholder (alpha)</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/main.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.3.3.6.min.css">
+    <script type="text/javascript" src="js/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.3.3.6.min.js"></script>
+    <script type="text/javascript" src="js/main.min.js"></script>
+</head>
+
+<body>
+    <div class="preloader-wrapper">
+        <div class="preloader">
+            <img src="img/preloader.gif" />
+        </div>
+    </div>
+    <div id="header">
+        <div id="menu">
+            <span class="menuItem">
+                <h1>Beholder (alpha)</h1>
+                <label>Hardware inventorization by
+                    <a href="https://www.sizingservers.be" target="_blank">Sizing Servers Lab</a>
+                    <a href="https://github.com/sizingservers/sizingservers.beholder.frontend" target="_blank">(GitHub)</a>
+                </label>
+                &nbsp;
+                <img src="img/cookie-small.png" title="This tool uses no cookies!" />
+                <br /> API endpoint:
+                <span id="apiEndpoint">?</span>
+            </span>
+            <button class="btn btn-default menuItem" id="collapse" type="button">(un)Collapse all</button>
+            <button class="btn btn-default-menuItem" id="addvhost" type="button">Add VMware host</button>
+        </div>
+        <div id="error" class="tools">
+            <label id="errorLabel"></label>
+           <img id="errorClose" src="img/times.svg" />
+        </div>
+        <div id="addEditVHost" class="tools">
+            IP or hostname:
+            <input id="vhIpOrHostname" type="text" /> Username:
+            <input id="vhUsername" type="text" /> Password:
+            <input id="vhPassword" type="password" /> VMs:
+            <input id="vhVMs" placeholder="Comma delimited hostnames" type="text" />
+            <button class="btn btn-default-menuItem" id="vhApply" type="button">Apply</button>
+            <button class="btn btn-default-menuItem" id="vhCancel" type="button">Cancel</button>
+        </div>
+    </div>
+    <div id="container"></div>
+</body>
+
+</html>

@@ -10,8 +10,61 @@ var vhSystemInformations = [];
 var newSystemInformationsCount = 0;
 var collapsed = true;
 //Templating without a template engine.
-var templateVHost = "<div class=\"si\" id=\"siVH{{}}\"><div class=\"siVHHeader\"><img class=\"flatbtn\" id=\"siVHToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>&nbsp;<label id=\"siVHIpOrHostname{{}}\"></label>&nbsp;<span id=\"siVHTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siVHBody{{}}\"><ul><li id=\"siVHOS{{}}\"></li><li id=\"siVHSystem{{}}\"> </li><li id=\"siVHBios{{}}\"> </li><li id=\"siVHBmcIp{{}}\"> </li><li id=\"siVHProcessors{{}}\"> </li><li id=\"siVHMemoryInGB{{}}\"></li><li id=\"siVHDatastores{{}}\"></li><li id=\"siVHDiskPaths{{}}\"> </li><li id=\"siVHNics{{}}\"> </li></ul>&emsp;&emsp;&emsp;<img class=\"flatbtn\" id=\"vhEdit{{}}\" src=\"img/ellipsis-h.svg\"></img>&emsp;<image class=\"flatbtn\" id=\"vhRemove{{}}\" src=\"img/trash-alt.svg\"></img></div><div class=\"vhVMContainer\" id=\"vhVMContainer{{}}\"></div></div>";
-var templateVM = "<div class=\"si\" id=\"si{{}}\"><div class=\"siHeader\"><img class=\"flatbtn\" id=\"siToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>&nbsp;<label id=\"siHostname{{}}\"></label>&nbsp;<span id=\"siIPs{{}}\"></span>&nbsp;<span id=\"siTimestamp{{}}\"></span></div><div class=\"siBody\" id=\"siBody{{}}\"><ul><li id=\"siOS{{}}\"></li><li id=\"siSystem{{}}\"> </li><li id=\"siBaseboard{{}}\"> </li><li id=\"siBios{{}}\"> </li><li id=\"siBmcIp{{}}\"> </li><li id=\"siProcessors{{}}\"> </li><li id=\"siMemoryModules{{}}\"></li><li id=\"siDisks{{}}\"> </li><li id=\"siNics{{}}\"> </li></ul>&emsp;&emsp;&nbsp;<img class=\"flatbtn\" id=\"remove{{}}\" src=\"img/trash-alt.svg\"></img></div></div>";
+var templateVHost =
+"<div class=\"si\" id=\"siVH{{}}\">\
+  <div class=\"siVHHeader\">\
+    <img class=\"flatbtn\" id=\"siVHToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>\
+    <label id=\"siVHIpOrHostname{{}}\"></label>\
+    <span id=\"siVHTimestamp{{}}\"></span>\
+  </div>\
+  <div class=\"siBody\" id=\"siVHBody{{}}\">\
+    <ul>\
+      <li id=\"siVHOS{{}}\"></li>\
+      <li id=\"siVHSystem{{}}\"></li>\
+      <li id=\"siVHBios{{}}\"></li>\
+      <li id=\"siVHBmcIp{{}}\"></li>\
+      <li id=\"siVHProcessors{{}}\"></li>\
+      <li id=\"siVHMemoryInGB{{}}\"></li>\
+      <li id=\"siVHDatastores{{}}\"></li>\
+      <li id=\"siVHDiskPaths{{}}\"></li>\
+      <li id=\"siVHNics{{}}\"></li>\
+    </ul>&emsp;&emsp;&emsp;\
+    <img class=\"flatbtn\" id=\"vhEdit{{}}\" src=\"img/ellipsis-h.svg\"></img>&emsp;\
+    <img class=\"flatbtn\" id=\"vhRemove{{}}\" src=\"img/trash-alt.svg\"></img>\
+  </div>\
+  <div class=\"vhVMContainer\" id=\"vhVMContainer{{}}\">\
+  </div>\
+ </div>";
+var templateVM =
+"<div class=\"si\" id=\"si{{}}\">\
+  <div class=\"siHeader\">\
+    <img class=\"flatbtn\" id=\"siToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>\
+    <label id=\"siHostname{{}}\"></label>\
+    <span id=\"siIPs{{}}\"></span>\
+    <span id=\"siTimestamp{{}}\"></span>\
+  </div>\
+  <div class=\"siBody\" id=\"siBody{{}}\">\
+    <ul>\
+      <li id=\"siOS{{}}\"></li>\
+      <li id=\"siSystem{{}}\"></li>\
+      <li id=\"siBaseboard{{}}\"></li>\
+      <li id=\"siBios{{}}\"></li>\
+      <li id=\"siBmcIp{{}}\"></li>\
+      <li id=\"siProcessors{{}}\"></li>\
+      <li id=\"siMemoryModules{{}}\"></li>\
+      <li id=\"siDisks{{}}\"></li>\
+      <li id=\"siNics{{}}\"></li>\
+    </ul>&emsp;&emsp;&nbsp;\
+    <img class=\"flatbtn\" id=\"remove{{}}\" src=\"img/trash-alt.svg\"></img>\
+  </div>\
+</div>";
+
+/*
+
+    <span>\
+    <textarea placeholder=\"Comments\"></textarea>\
+    </span\
+*/
 
 var vhSystemInformation = function (siVHJson) {
     var _me = this;
@@ -44,41 +97,51 @@ var vhSystemInformation = function (siVHJson) {
     $('#container').append(templateVHost.replace(/{{}}/g, newSystemInformationsCount));
 
     this.updateInfo = function (siVHJson) {
-        _ipOrHostname = siVHJson['ipOrHostname'];
-        _vms = siVHJson['vmHostnames'].split('\t');
+        try {
+            _ipOrHostname = siVHJson['ipOrHostname'];
+            _vms = siVHJson['vmHostnames'].split('\t');
 
-        $(_siVHIpOrHostname).text('VHOST ' + _ipOrHostname);
+            $(_siVHIpOrHostname).text('VHOST ' + _ipOrHostname);
 
-        var ts = siVHJson['timeStampInSecondsSinceEpochUtc'];
-        if (ts < 10000000000) {
-            ts *= 1000 //seconds to ms.
-        }
+            var ts = siVHJson['timeStampInSecondsSinceEpochUtc'];
+            if (ts < 10000000000) {
+                ts *= 1000 //seconds to ms.
+            }
 
-        ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
-        $(_siVHTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
+            ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
+            $(_siVHTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
 
 
-        $(_siVHOS).html('OS:&emsp;&emsp;&emsp;&emsp;&nbsp;' + siVHJson['os']);
-        $(_siVHSystem).html('System:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['system']);
-        $(_siVHBios).html('BIOS:&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bios']);
-        $(_siVHBmcIp).html('BMC IP:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bmcIp']);
-        $(_siVHProcessors).html('Processors:&emsp;' + siVHJson['processors'].replace(/\t/g, ', ') + ' (total ' + siVHJson['numCpuCores'] + ' cores, ' + siVHJson['numCpuThreads'] + ' threads)');
-        $(_siVHMemoryInGB).html('Memory:&emsp;&emsp;&nbsp;' + siVHJson['memoryInGB'] + ' GB');
+            $(_siVHOS).html('OS:&emsp;&emsp;&emsp;&emsp;&nbsp;' + siVHJson['os']);
+            $(_siVHSystem).html('System:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['system']);
+            $(_siVHBios).html('BIOS:&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bios']);
+            $(_siVHBmcIp).html('BMC IP:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bmcIp']);
 
-        $(_siVHDatastores).html('Datastores:<ul></ul>');
-        $.each(siVHJson['datastores'].split('\t'), function(index, value){
-            $(_siVHDatastores + ' ul').append('<li>' + value + '</li>');
-        });
+            $(_siVHProcessors).html('Processors:<ul></ul>');
+            $.each(siVHJson['processors'].split('\t'), function (index, value) {
+                $(_siVHProcessors + ' ul').append('<li>' + value + '</li>');
+            });
+            $(_siVHProcessors + ' ul').append('<li> (total ' + siVHJson['numCpuCores'] + ' cores, ' + siVHJson['numCpuThreads'] + ' threads)</li>');
 
-        $(_siVHDiskPaths).html('Paths:<ul></ul>');
-        $.each(siVHJson['vDiskPaths'].split('\t'), function(index, value){
-            $(_siVHDiskPaths + ' ul').append('<li>' + value + '</li>');
-        });
+            $(_siVHMemoryInGB).html('Memory:&emsp;&emsp;&nbsp;' + siVHJson['memoryInGB'] + ' GB');
 
-        $(_siVHNics).html('NICs:<ul></ul>');
-        $.each(siVHJson['nics'].split('\t'), function(index, value){
-            $(_siVHNics + ' ul').append('<li>' + value + '</li>');
-        });
+            $(_siVHDatastores).html('Datastores:<ul></ul>');
+            $.each(siVHJson['datastores'].split('\t'), function (index, value) {
+                $(_siVHDatastores + ' ul').append('<li>' + value + '</li>');
+            });
+
+            $(_siVHDiskPaths).html('Paths:<ul></ul>');
+            $.each(siVHJson['vDiskPaths'].split('\t'), function (index, value) {
+                $(_siVHDiskPaths + ' ul').append('<li>' + value + '</li>');
+            });
+
+            $(_siVHNics).html('NICs:<ul></ul>');
+            $.each(siVHJson['nics'].split('\t'), function (index, value) {
+                $(_siVHNics + ' ul').append('<li>' + value + '</li>');
+            });
+        } catch (ex) {
+            handleError("Failed updating system information (vhost reachable?). See the console for details.", ex);
+        };
     };
 
     this.ipOrHostname = function () {
@@ -132,16 +195,18 @@ var vhSystemInformation = function (siVHJson) {
 
     $(_btnVHEdit).click(function () {
         $('#addEditVHost').show();
-        $('#container').css('margin-top', ($('#header').height() + 20) + 'px' );
+        setContainerTopMargin();
         $('#vhIpOrHostname').val(_ipOrHostname);
         $('#vhUsername').val('');
         $('#vhPassword').val('');
         $('#vhVMs').val(_vms.join(', '));
+        $('#vhIpOrHostname').focus();
     });
 
     this.collapse();
     this.updateInfo(siVHJson);
 };
+
 
 var systemInformation = function (siJson, containerId) {
     var _me = this;
@@ -175,43 +240,54 @@ var systemInformation = function (siJson, containerId) {
     $(containerId).append(_instance);
 
     this.updateInfo = function (siJson, containerId) {
+        try {
+            if (_containerId != containerId) {
+                $(_si).detach();
+                $(containerId).append(_instance);
+                _containerId = containerId;
+            }
 
-        if (_containerId != containerId) {
-            $(_si).detach();
-            $(containerId).append(_instance);
-            _containerId = containerId;
-        }
+            _hostname = siJson['hostname'];
+            $(_siHostname).text(_hostname);
+            $(_siIPs).text(siJson['ips'].replace(/\t/g, ', '));
 
-        _hostname = siJson['hostname'];
-        $(_siHostname).text(_hostname);
-        $(_siIPs).text(siJson['ips'].replace(/\t/g, ', '));
+            var ts = siJson['timeStampInSecondsSinceEpochUtc'];
+            if (ts < 10000000000) {
+                ts *= 1000 //seconds to ms.
+            }
 
-        var ts = siJson['timeStampInSecondsSinceEpochUtc'];
-        if (ts < 10000000000) {
-            ts *= 1000 //seconds to ms.
-        }
-
-        ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
-        $(_siTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
+            ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
+            $(_siTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
 
 
-        $(_siOS).html('OS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['os']);
-        $(_siSystem).html('System:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['system']);
-        $(_siBaseboard).html('Baseboard:&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;' + siJson['baseboard']);
-        $(_siBios).html('BIOS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bios']);
-        $(_siBmcIp).html('BMC IP:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bmcIp']);
-        $(_siProcessors).html('Processors:&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['processors'].replace(/\t/g, ', '));
-        $(_siMemoryModules).html('Memory modules:&emsp;' + siJson['memoryModules'].replace(/\t/g, ','));
+            $(_siOS).html('OS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['os']);
+            $(_siSystem).html('System:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['system']);
+            $(_siBaseboard).html('Baseboard:&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;' + siJson['baseboard']);
+            $(_siBios).html('BIOS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bios']);
+            $(_siBmcIp).html('BMC IP:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bmcIp']);
 
-        $(_siDisks).html('Disks:<ul></ul>');
-        $.each(siJson['disks'].split('\t'), function(index, value){
-            $(_siDisks + ' ul').append('<li>' + value + '</li>');
-        });
+            $(_siProcessors).html('Processors:<ul></ul>');
+            $.each(siJson['processors'].split('\t'), function (index, value) {
+                $(_siProcessors + ' ul').append('<li>' + value + '</li>');
+            });
 
-        $(_siNics).html('NICs:<ul></ul>');
-        $.each(siJson['nics'].split('\t'), function(index, value){
-            $(_siNics + ' ul').append('<li>' + value + '</li>');
-        });
+            $(_siMemoryModules).html('Memory modules:<ul></ul>');
+            $.each(siJson['memoryModules'].split('\t'), function (index, value) {
+                $(_siMemoryModules + ' ul').append('<li>' + value + '</li>');
+            });
+
+            $(_siDisks).html('Disks:<ul></ul>');
+            $.each(siJson['disks'].split('\t'), function (index, value) {
+                $(_siDisks + ' ul').append('<li>' + value + '</li>');
+            });
+
+            $(_siNics).html('NICs:<ul></ul>');
+            $.each(siJson['nics'].split('\t'), function (index, value) {
+                $(_siNics + ' ul').append('<li>' + value + '</li>');
+            });
+        } catch (ex) {
+            handleError("Failed updating system information (machine reachable?). See the console for details.", ex);
+        };
     };
 
     this.hostname = function () {
@@ -258,12 +334,17 @@ var systemInformation = function (siJson, containerId) {
 };
 
 var refresh = function () {
+    var error = "Failed fetching system information (API connected?).";
     //Add or update the info on the GUI.
     $.getJSON(endpoint + "/vmwarehosts/listsysteminformation?apiKey=" + apiKey, function (data) {
         $.each(data, function (i, siVHJson) {
             addOrUpdateVHSystemInformation(siVHJson);
         });
-    }).always(function () {
+    })
+    .fail(function(jqXHR, textStatus, errorThrown) {
+        handleError(error, error);
+    })
+    .always(function () {
         $.getJSON(endpoint + "/systeminformations/list?apiKey=" + apiKey, function (data) {
             $.each(data, function (i, siJson) {
                 var hostname = siJson['hostname'];
@@ -276,7 +357,11 @@ var refresh = function () {
                 });
                 addOrUpdateSystemInformation(siJson, containerId);
             });
-        }).always(function () {
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            handleError(error, error);
+        })
+        .always(function () {
             sortSystemInformationByHostname();
             $('.preloader-wrapper').fadeOut();
             $('body').removeClass('preloader-site');
@@ -348,8 +433,8 @@ var addEditVHost = function () {
         vmwareHostConnectionInfo['password'] = "";
     }
     if (vmwareHostConnectionInfo['ipOrHostname'].length) {
-        if (!vmwareHostConnectionInfo['password'].length || 
-        (vmwareHostConnectionInfo['password'].length && confirm('Caution! Credentials will be send over the network. Are you sure that you want to do this?'))) {
+        if (!vmwareHostConnectionInfo['password'].length ||
+            (vmwareHostConnectionInfo['password'].length && confirm('Caution! Credentials will be send over the network. Are you sure that you want to do this?'))) {
             $('body').addClass('preloader-site');
             $('.preloader-wrapper').fadeIn();
 
@@ -385,7 +470,8 @@ var collapse = function () {
 
     if (collapsedCount == 0) {
         collapsed = true;
-    } else if (collapsedCount == systemInformations.length + vhSystemInformations.length) {
+    }
+    else if (collapsedCount == systemInformations.length + vhSystemInformations.length) {
         collapsed = false;
     }
 
@@ -405,14 +491,32 @@ var collapse = function () {
     });
 };
 
-var closeError = function(){
-    $('#error').hide();
-    $('#container').css('margin-top', ($('#header').height() + 20) + 'px' );
+var setContainerTopMargin = function () {
+    $('#container').css('margin-top', ($('#header').height() + 20) + 'px');
 }
 
-var addEditVHostShow = function(){
+var handleError = function (error, fullError) {
+    $('#error').show();
+    $('#errorLabel').text(error);
+    setContainerTopMargin();
+
+    console.error(fullError);
+}
+var closeError = function () {
+    $('#error').hide();
+    setContainerTopMargin();
+}
+
+var addEditVHostShow = function () {
     $('#addEditVHost').show();
-    $('#container').css('margin-top', ($('#header').height() + 20) + 'px' );
+    setContainerTopMargin();
+    $('#vhIpOrHostname').focus();
+}
+
+window.onerror = function (message, filename, linenumber) {
+    handleError("Unspecified error occured. See the console for details.", message);
+
+    return true;
 }
 
 var main = function () {
@@ -424,12 +528,12 @@ var main = function () {
     $('#addvhost').click(function () { addEditVHostShow(); });
     $('#collapse').click(function () { collapse(); });
 
-    $('#errorClose').click(function() {closeError();});
+    $('#errorClose').click(function () { closeError(); });
 
     $('#vhApply').click(function () { addEditVHost(); });
     $('#vhCancel').click(function () {
         $('#addEditVHost').hide();
-        $('#container').css('margin-top', ($('#header').height() + 20) + 'px' );
+        setContainerTopMargin();
         $('#vhUsername').val('');
         $('#vhPassword').val('');
     });
@@ -437,6 +541,5 @@ var main = function () {
     setTimeout(function () { refresh(); }, 1000);
     setInterval(function () { refresh(); }, 30000);
 };
-
 
 $(document).ready(main);
