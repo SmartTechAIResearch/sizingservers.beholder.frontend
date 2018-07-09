@@ -80,6 +80,11 @@ body.preloader-site {
   cursor: pointer;
   margin: 1px;
 }
+.icon {
+  width: 15px;
+  height: 15px;
+  margin: 1px;
+}
 #addEditVHost {
   background-color: #cfb;
   padding: 25px;

@@ -11,9 +11,10 @@ var newSystemInformationsCount = 0;
 var collapsed = true;
 //Templating without a template engine.
 var templateVHost =
-"<div class=\"si\" id=\"siVH{{}}\">\
+    "<div class=\"si\" id=\"siVH{{}}\">\
   <div class=\"siVHHeader\">\
     <img class=\"flatbtn\" id=\"siVHToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>\
+    <img class=\"icon\" src=\"img/VMwareHost.svg\"></img>\
     <label id=\"siVHHostname{{}}\"></label>\
     <span id=\"siVHIPs{{}}\"></span>\
     <span id=\"siVHTimestamp{{}}\"></span>\
@@ -37,9 +38,10 @@ var templateVHost =
   </div>\
  </div>";
 var templateVM =
-"<div class=\"si\" id=\"si{{}}\">\
+    "<div class=\"si\" id=\"si{{}}\">\
   <div class=\"siHeader\">\
     <img class=\"flatbtn\" id=\"siToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>\
+    <img class=\"icon\" id=\"siIcon{{}}\" src=\"img/server.svg\"></img>\
     <label id=\"siHostname{{}}\"></label>\
     <span id=\"siIPs{{}}\"></span>\
     <span id=\"siTimestamp{{}}\"></span>\
@@ -103,7 +105,7 @@ var vhSystemInformation = function (siVHJson) {
             _hostname = siVHJson['hostname'];
             _vms = siVHJson['vmHostnames'].split('\t');
 
-            $(_siVHHostname).text('VHOST ' + _hostname);
+            $(_siVHHostname).text(_hostname);
             $(_siVHIPs).text(siVHJson['ips'].replace(/\t/g, ', '));
 
             var ts = siVHJson['timeStampInSecondsSinceEpochUtc'];
@@ -221,6 +223,7 @@ var systemInformation = function (siJson, containerId) {
 
     var _si = "#si" + newSystemInformationsCount;
     var _siToggleCollapse = "#siToggleCollapse" + newSystemInformationsCount;
+    var _siIcon = "#siIcon" + newSystemInformationsCount;
     var _siHostname = "#siHostname" + newSystemInformationsCount;
     var _siIPs = "#siIPs" + newSystemInformationsCount;
     var _siTimestamp = "#siTimestamp" + newSystemInformationsCount;
@@ -247,6 +250,13 @@ var systemInformation = function (siJson, containerId) {
                 $(_si).detach();
                 $(containerId).append(_instance);
                 _containerId = containerId;
+            }
+
+            if (siJson['system'].indexOf('VMware') >= 0) {
+                $(_siIcon).attr('src', 'img/VMwareVM.svg');
+            }
+            else {
+                $(_siIcon).attr('src', 'img/server.svg');
             }
 
             _hostname = siJson['hostname'];
@@ -343,31 +353,31 @@ var refresh = function () {
             addOrUpdateVHSystemInformation(siVHJson);
         });
     })
-    .fail(function(jqXHR, textStatus, errorThrown) {
-        handleError(error, error);
-    })
-    .always(function () {
-        $.getJSON(endpoint + "/systeminformations/list?apiKey=" + apiKey, function (data) {
-            $.each(data, function (i, siJson) {
-                var hostname = siJson['hostname'];
-                var containerId = '#container';
-                $.each(vhSystemInformations, function (j, vhSI) {
-                    if ($.inArray(hostname, vhSI.vms()) != -1) {
-                        containerId = vhSI.vhVMContainer();
-                        return false; //break
-                    }
-                });
-                addOrUpdateSystemInformation(siJson, containerId);
-            });
-        })
-        .fail(function(jqXHR, textStatus, errorThrown) {
+        .fail(function (jqXHR, textStatus, errorThrown) {
             handleError(error, error);
         })
         .always(function () {
-            $('.preloader-wrapper').fadeOut();
-            $('body').removeClass('preloader-site');
-        })
-    });
+            $.getJSON(endpoint + "/systeminformations/list?apiKey=" + apiKey, function (data) {
+                $.each(data, function (i, siJson) {
+                    var hostname = siJson['hostname'];
+                    var containerId = '#container';
+                    $.each(vhSystemInformations, function (j, vhSI) {
+                        if ($.inArray(hostname, vhSI.vms()) != -1) {
+                            containerId = vhSI.vhVMContainer();
+                            return false; //break
+                        }
+                    });
+                    addOrUpdateSystemInformation(siJson, containerId);
+                });
+            })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    handleError(error, error);
+                })
+                .always(function () {
+                    $('.preloader-wrapper').fadeOut();
+                    $('body').removeClass('preloader-site');
+                })
+        });
 };
 
 var addOrUpdateSystemInformation = function (siJson, containerId) {
