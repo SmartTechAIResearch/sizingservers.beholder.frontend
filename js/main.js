@@ -210,7 +210,6 @@ var vhSystemInformation = function (siVHJson) {
     this.updateInfo(siVHJson);
 };
 
-
 var systemInformation = function (siJson, containerId) {
     var _me = this;
     var _hostname;
@@ -365,7 +364,6 @@ var refresh = function () {
             handleError(error, error);
         })
         .always(function () {
-            sortSystemInformationByHostname();
             $('.preloader-wrapper').fadeOut();
             $('body').removeClass('preloader-site');
         })
@@ -400,28 +398,6 @@ var addOrUpdateVHSystemInformation = function (siVHJson) {
     if (si == null) {
         vhSystemInformations.push(new vhSystemInformation(siVHJson));
     }
-};
-
-//Does not work yet
-var sortSystemInformationByHostname = function () {
-    var $sis = $('#container').children();
-    $sis.sort(function (siX, siY) {
-        var siXCounter = siX.getAttribute('id').substring('si'.length);
-        var siYCounter = siY.getAttribute('id').substring('si'.length);
-
-        var siXHostname = $('#siHostname' + siXCounter).text();
-        var siYHostname = $('#siHostname' + siYCounter).text();
-
-        if (siXHostname > siYHostname) {
-            return 1;
-        }
-        if (siXHostname < siYHostname) {
-            return -1;
-        }
-        return 0;
-    });
-
-    $sis.detach().appendTo($('#container'));
 };
 
 var addEditVHost = function () {
