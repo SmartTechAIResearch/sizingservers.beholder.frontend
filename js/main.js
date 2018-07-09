@@ -14,7 +14,8 @@ var templateVHost =
 "<div class=\"si\" id=\"siVH{{}}\">\
   <div class=\"siVHHeader\">\
     <img class=\"flatbtn\" id=\"siVHToggleCollapse{{}}\" src=\"img/angle-right.svg\"></img>\
-    <label id=\"siVHIpOrHostname{{}}\"></label>\
+    <label id=\"siVHHostname{{}}\"></label>\
+    <span id=\"siVHIPs{{}}\"></span>\
     <span id=\"siVHTimestamp{{}}\"></span>\
   </div>\
   <div class=\"siBody\" id=\"siVHBody{{}}\">\
@@ -68,7 +69,7 @@ var templateVM =
 
 var vhSystemInformation = function (siVHJson) {
     var _me = this;
-    var _ipOrHostname;
+    var _hostname;
     var _vms = [];
 
     //Templating without a template engine.
@@ -76,7 +77,8 @@ var vhSystemInformation = function (siVHJson) {
 
     var _siVH = "#siVH" + newSystemInformationsCount;
     var _siVHToggleCollapse = "#siVHToggleCollapse" + newSystemInformationsCount;
-    var _siVHIpOrHostname = "#siVHIpOrHostname" + newSystemInformationsCount;
+    var _siVHHostname = "#siVHHostname" + newSystemInformationsCount;
+    var _siVHIPs = "#siVHIPs" + newSystemInformationsCount;
     var _siVHTimestamp = "#siVHTimestamp" + newSystemInformationsCount;
     var _siVHBody = "#siVHBody" + newSystemInformationsCount;
     var _siVHOS = "#siVHOS" + newSystemInformationsCount;
@@ -98,10 +100,11 @@ var vhSystemInformation = function (siVHJson) {
 
     this.updateInfo = function (siVHJson) {
         try {
-            _ipOrHostname = siVHJson['ipOrHostname'];
+            _hostname = siVHJson['hostname'];
             _vms = siVHJson['vmHostnames'].split('\t');
 
-            $(_siVHIpOrHostname).text('VHOST ' + _ipOrHostname);
+            $(_siVHHostname).text('VHOST ' + _hostname);
+            $(_siVHIPs).text(siVHJson['ips'].replace(/\t/g, ', '));
 
             var ts = siVHJson['timeStampInSecondsSinceEpochUtc'];
             if (ts < 10000000000) {
@@ -144,8 +147,8 @@ var vhSystemInformation = function (siVHJson) {
         };
     };
 
-    this.ipOrHostname = function () {
-        return _ipOrHostname;
+    this.hostname = function () {
+        return _hostname;
     };
     this.vms = function () {
         return _vms;
@@ -185,7 +188,7 @@ var vhSystemInformation = function (siVHJson) {
             $(_siVH).remove();
 
             $.ajax({
-                url: endpoint + "/vmwarehosts/remove?apiKey=" + apiKey + "&ipOrHostname=" + _ipOrHostname,
+                url: endpoint + "/vmwarehosts/remove?apiKey=" + apiKey + "&hostname=" + _hostname,
                 type: 'DELETE'
             });
 
@@ -196,7 +199,7 @@ var vhSystemInformation = function (siVHJson) {
     $(_btnVHEdit).click(function () {
         $('#addEditVHost').show();
         setContainerTopMargin();
-        $('#vhIpOrHostname').val(_ipOrHostname);
+        $('#vhIpOrHostname').val(_hostname);
         $('#vhUsername').val('');
         $('#vhPassword').val('');
         $('#vhVMs').val(_vms.join(', '));
@@ -387,7 +390,7 @@ var addOrUpdateSystemInformation = function (siJson, containerId) {
 var addOrUpdateVHSystemInformation = function (siVHJson) {
     var si = null;
     $.each(vhSystemInformations, function (i, siCandidate) {
-        if (siCandidate.ipOrHostname() == siVHJson['ipOrHostname']) {
+        if (siCandidate.hostname() == siVHJson['hostname']) {
             si = siCandidate;
             si.updateInfo(siVHJson);
             return false;
@@ -423,7 +426,7 @@ var sortSystemInformationByHostname = function () {
 
 var addEditVHost = function () {
     var vmwareHostConnectionInfo = {
-        'ipOrHostname': $.trim($('#vhIpOrHostname').val()),
+        'hostname': $.trim($('#vhIpOrHostname').val()),
         'vmHostnames': $.trim($('#vhVMs').val()).replace(/ /g, '').replace(/\t/g, '').replace(/,/g, '\t'),
         'username': $.trim($('#vhUsername').val()),
         'password': $('#vhPassword').val()
@@ -432,7 +435,7 @@ var addEditVHost = function () {
         vmwareHostConnectionInfo['username'] = ".&DO_NOT_UPDATE_Credentials&.";
         vmwareHostConnectionInfo['password'] = "";
     }
-    if (vmwareHostConnectionInfo['ipOrHostname'].length) {
+    if (vmwareHostConnectionInfo['hostname'].length) {
         if (!vmwareHostConnectionInfo['password'].length ||
             (vmwareHostConnectionInfo['password'].length && confirm('Caution! Credentials will be send over the network. Are you sure that you want to do this?'))) {
             $('body').addClass('preloader-site');
