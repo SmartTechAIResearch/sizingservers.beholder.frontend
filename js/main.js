@@ -9,6 +9,8 @@ var systemInformations = [];
 var vhSystemInformations = [];
 var newSystemInformationsCount = 0;
 var collapsed = true;
+//To make sure that comments are updated server-side
+var commentsFocus = false;
 //Templating without a template engine.
 var templateVHost =
     "<div class=\"si\" id=\"siVH{{}}\">\
@@ -31,12 +33,17 @@ var templateVHost =
       <li id=\"siVHDiskPaths{{}}\"></li>\
       <li id=\"siVHNics{{}}\"></li>\
     </ul>&emsp;&emsp;&emsp;\
-    <img class=\"flatbtn\" id=\"vhEdit{{}}\" src=\"img/ellipsis-h.svg\"></img>&emsp;\
+    <div>\
+      <textarea id=\"siVHComments{{}}\" placeholder=\"Comments\"></textarea>\
+    </div>\
+    <img class=\"flatbtn\" id=\"vhApply{{}}\" src=\"img/check-circle.svg\"></img>\
+    <img class=\"flatbtn\" id=\"vhEdit{{}}\" src=\"img/ellipsis-h.svg\"></img>\
     <img class=\"flatbtn\" id=\"vhRemove{{}}\" src=\"img/trash-alt.svg\"></img>\
   </div>\
   <div class=\"vhVMContainer\" id=\"vhVMContainer{{}}\">\
   </div>\
  </div>";
+
 var templateVM =
     "<div class=\"si\" id=\"si{{}}\">\
   <div class=\"siHeader\">\
@@ -58,16 +65,13 @@ var templateVM =
       <li id=\"siDisks{{}}\"></li>\
       <li id=\"siNics{{}}\"></li>\
     </ul>&emsp;&emsp;&nbsp;\
+    <div>\
+      <textarea id=\"siComments{{}}\" placeholder=\"Comments\"></textarea>\
+    </div>\
+    <img class=\"flatbtn\" id=\"apply{{}}\" src=\"img/check-circle.svg\"></img>\
     <img class=\"flatbtn\" id=\"remove{{}}\" src=\"img/trash-alt.svg\"></img>\
   </div>\
 </div>";
-
-/*
-
-    <span>\
-    <textarea placeholder=\"Comments\"></textarea>\
-    </span\
-*/
 
 var vhSystemInformation = function (siVHJson) {
     var _me = this;
@@ -92,7 +96,9 @@ var vhSystemInformation = function (siVHJson) {
     var _siVHDatastores = "#siVHDatastores" + newSystemInformationsCount;
     var _siVHDiskPaths = "#siVHDiskPaths" + newSystemInformationsCount;
     var _siVHNics = "#siVHNics" + newSystemInformationsCount;
+    var _siVHComments = "#siVHComments" + newSystemInformationsCount;
 
+    var _btnVHApply = '#vhApply' + newSystemInformationsCount;
     var _btnVHEdit = '#vhEdit' + newSystemInformationsCount;
     var _btnVHRemove = '#vhRemove' + newSystemInformationsCount;
 
@@ -144,6 +150,10 @@ var vhSystemInformation = function (siVHJson) {
             $.each(siVHJson['nics'].split('\t'), function (index, value) {
                 $(_siVHNics + ' ul').append('<li>' + value + '</li>');
             });
+
+            if (!$(_siVHComments).is(':focus')) {
+                $(_siVHComments).val(siVHJson['comments']);
+            }
         } catch (ex) {
             handleError("Failed updating system information (vhost reachable?). See the console for details.", ex);
         };
@@ -177,6 +187,24 @@ var vhSystemInformation = function (siVHJson) {
         else {
             _me.uncollapse();
         }
+    });
+
+    $(_siVHComments).focusin(function () {
+        commentsFocus = true;
+    });
+    $(_siVHComments).focusout(function () {
+        commentsFocus = false;
+    });
+
+    $(_btnVHApply).click(function () {
+        var comments = JSON.stringify($(_siVHComments).val());
+        $.ajax({
+            url: endpoint + "/vmwarehosts/addorupdatecomments?apiKey=" + apiKey + "&hostname=" + _hostname,
+            data: comments,
+            type: 'PUT',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+        });
     });
 
     $(_btnVHRemove).click(function () {
@@ -237,9 +265,10 @@ var systemInformation = function (siJson, containerId) {
     var _siMemoryModules = "#siMemoryModules" + newSystemInformationsCount;
     var _siDisks = "#siDisks" + newSystemInformationsCount;
     var _siNics = "#siNics" + newSystemInformationsCount;
+    var _siComments = "#siVHComments" + newSystemInformationsCount;
 
+    var _btnApply = '#vhApply' + newSystemInformationsCount;
     var _btnRemove = '#remove' + newSystemInformationsCount;
-
 
     _instance = templateVM.replace(/{{}}/g, newSystemInformationsCount);
     $(containerId).append(_instance);
@@ -297,6 +326,10 @@ var systemInformation = function (siJson, containerId) {
             $.each(siJson['nics'].split('\t'), function (index, value) {
                 $(_siNics + ' ul').append('<li>' + value + '</li>');
             });
+
+            if (!$(_siComments).is(':focus')) {
+                $(_siComments).val(siJson['comments']);
+            }
         } catch (ex) {
             handleError("Failed updating system information (machine reachable?). See the console for details.", ex);
         };
@@ -327,6 +360,24 @@ var systemInformation = function (siJson, containerId) {
         }
     });
 
+    $(_siComments).focusin(function () {
+        commentsFocus = true;
+    });
+    $(_siComments).focusout(function () {
+        commentsFocus = false;
+    });
+
+    $(_btnApply).click(function () {
+        var comments = JSON.stringify($(_siComments).val());
+        $.ajax({
+            url: endpoint + "/systeminformations/addorupdatecomments?apiKey=" + apiKey + "&hostname=" + _hostname,
+            data: comments,
+            type: 'PUT',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+        });
+    });
+
     $(_btnRemove).click(function () {
         if (confirm('Are you sure that you want to remove this?')) {
             systemInformations = jQuery.grep(systemInformations, function (value) {
@@ -346,6 +397,9 @@ var systemInformation = function (siJson, containerId) {
 };
 
 var refresh = function () {
+    if (commentsFocus) {
+        return;
+    }
     var error = "Failed fetching system information (API connected?).";
     //Add or update the info on the GUI.
     $.getJSON(endpoint + "/vmwarehosts/listsysteminformation?apiKey=" + apiKey, function (data) {
