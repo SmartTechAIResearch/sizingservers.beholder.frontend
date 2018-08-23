@@ -265,9 +265,9 @@ var systemInformation = function (siJson, containerId) {
     var _siMemoryModules = "#siMemoryModules" + newSystemInformationsCount;
     var _siDisks = "#siDisks" + newSystemInformationsCount;
     var _siNics = "#siNics" + newSystemInformationsCount;
-    var _siComments = "#siVHComments" + newSystemInformationsCount;
+    var _siComments = "#siComments" + newSystemInformationsCount;
 
-    var _btnApply = '#vhApply' + newSystemInformationsCount;
+    var _btnApply = '#apply' + newSystemInformationsCount;
     var _btnRemove = '#remove' + newSystemInformationsCount;
 
     _instance = templateVM.replace(/{{}}/g, newSystemInformationsCount);
