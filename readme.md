@@ -26,6 +26,9 @@ The front-end app visualizes all that info.
 
 <a name="version_history"></a>
 ## Version history
+**2018-08-28** - **version 0.3**: Comments and more robust.  
+*Compatible with sizingservers.beholder.dnfapi 0.3*
+
 **2018-07-12** - **version 0.2**: First robust implementation.  
 *Compatible with sizingservers.beholder.dnfapi 0.2*
 

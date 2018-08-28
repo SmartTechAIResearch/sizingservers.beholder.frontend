@@ -182,11 +182,11 @@ var vhSystemInformation = function (siVHJson) {
             } catch (ignoreEx) { }
 
             if (!siVHJson['responsive']) {
-                throw $(_siVHHostname).text() + ' NOT RESPONDING';
+                throw $(_siVHHostname).text() + ' > disabled because not responding';
             }
         } catch (ex) {
             $(_siVHHostname).text(ex);
-            $(_siVHTimestamp).text('(last fetch attempt: ' + (new Date()).toLocaleString() + ')');
+            $(_siVHTimestamp).text('-- uncollapse, edit connection info (...), click \"Apply / re-enable\" wait for refresh (last fetch attempt: ' + (new Date()).toLocaleString() + ')');
             handleError("Failed updating system information (vhost reachable?). See the console for details.", ex);
         };
     };
@@ -390,12 +390,12 @@ var systemInformation = function (siJson, containerId) {
             } catch (ignoreEx) { }
 
             if (!siJson['responsive']) {
-                throw $(_siHostname).text() + ' NOT RESPONDING';
+                throw $(_siHostname).text() + ' > not responding';
             }
         } catch (ex) {
-            $(_siHostname).text(ex);           
+            $(_siHostname).text(ex);
             $(_siTimestamp).text('(last fetch attempt: ' + (new Date()).toLocaleString() + ')');
-             handleError("Failed updating system information (machine reachable?). See the console for details.", ex);
+            handleError("Failed updating system information (machine reachable?). See the console for details.", ex);
         };
     };
 
@@ -533,7 +533,8 @@ var addEditVHost = function () {
         'hostname': $.trim($('#vhIpOrHostname').val()),
         'vmHostnames': $.trim($('#vhVMs').val()).replace(/ /g, '').replace(/\t/g, '').replace(/,/g, '\t'),
         'username': $.trim($('#vhUsername').val()),
-        'password': $('#vhPassword').val()
+        'password': $('#vhPassword').val(),
+        'enabled': 1
     };
     if (!vmwareHostConnectionInfo['username'].length) {
         vmwareHostConnectionInfo['username'] = ".&DO_NOT_UPDATE_Credentials&.";
@@ -552,6 +553,15 @@ var addEditVHost = function () {
                 dataType: "json",
                 type: 'POST'
             }).success(function () {
+                systemInformations = [];
+                vhSystemInformations = [];
+                newSystemInformationsCount = 0;
+                collapsed = true;
+                //To make sure that comments are updated server-side
+                commentsFocus = false;
+
+                $('#container').empty();
+
                 refresh();
             });
         }
