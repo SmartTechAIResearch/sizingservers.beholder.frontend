@@ -109,52 +109,84 @@ var vhSystemInformation = function (siVHJson) {
     this.updateInfo = function (siVHJson) {
         try {
             _hostname = siVHJson['hostname'];
-            _vms = siVHJson['vmHostnames'].split('\t');
-
             $(_siVHHostname).text(_hostname);
-            $(_siVHIPs).text(siVHJson['ips'].replace(/\t/g, ', '));
 
-            var ts = siVHJson['timeStampInSecondsSinceEpochUtc'];
-            if (ts < 10000000000) {
-                ts *= 1000 //seconds to ms.
-            }
+            try {
+                _vms = siVHJson['vmHostnames'].split('\t');
+            } catch (ignoreEx) { }
 
-            ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
-            $(_siVHTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
+            try {
+                $(_siVHIPs).text(siVHJson['ips'].replace(/\t/g, ', '));
+            } catch (ignoreEx) { }
 
+            try {
+                var ts = siVHJson['timeStampInSecondsSinceEpochUtc'];
+                if (ts < 10000000000) {
+                    ts *= 1000 //seconds to ms.
+                }
 
-            $(_siVHOS).html('OS:&emsp;&emsp;&emsp;&emsp;&nbsp;' + siVHJson['os']);
-            $(_siVHSystem).html('System:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['system']);
-            $(_siVHBios).html('BIOS:&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bios']);
-            $(_siVHBmcIp).html('BMC IP:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bmcIp']);
+                ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
+                $(_siVHTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
+            } catch (ignoreEx) { }
 
-            $(_siVHProcessors).html('Processors:<ul></ul>');
-            $.each(siVHJson['processors'].split('\t'), function (index, value) {
-                $(_siVHProcessors + ' ul').append('<li>' + value + '</li>');
-            });
-            $(_siVHProcessors + ' ul').append('<li> (total ' + siVHJson['numCpuCores'] + ' cores, ' + siVHJson['numCpuThreads'] + ' threads)</li>');
+            try {
+                $(_siVHOS).html('OS:&emsp;&emsp;&emsp;&emsp;&nbsp;' + siVHJson['os']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siVHSystem).html('System:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['system']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siVHBios).html('BIOS:&emsp;&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bios']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siVHBmcIp).html('BMC IP:&emsp;&emsp;&nbsp;&nbsp;' + siVHJson['bmcIp']);
+            } catch (ignoreEx) { }
 
-            $(_siVHMemoryInGB).html('Memory:&emsp;&emsp;&nbsp;' + siVHJson['memoryInGB'] + ' GB');
+            try {
+                $(_siVHProcessors).html('Processors:<ul></ul>');
+                $.each(siVHJson['processors'].split('\t'), function (index, value) {
+                    $(_siVHProcessors + ' ul').append('<li>' + value + '</li>');
+                });
+                $(_siVHProcessors + ' ul').append('<li> (total ' + siVHJson['numCpuCores'] + ' cores, ' + siVHJson['numCpuThreads'] + ' threads)</li>');
+            } catch (ignoreEx) { }
 
-            $(_siVHDatastores).html('Datastores:<ul></ul>');
-            $.each(siVHJson['datastores'].split('\t'), function (index, value) {
-                $(_siVHDatastores + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siVHMemoryInGB).html('Memory:&emsp;&emsp;&nbsp;' + siVHJson['memoryInGB'] + ' GB');
+            } catch (ignoreEx) { }
 
-            $(_siVHDiskPaths).html('Paths:<ul></ul>');
-            $.each(siVHJson['vDiskPaths'].split('\t'), function (index, value) {
-                $(_siVHDiskPaths + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siVHDatastores).html('Datastores:<ul></ul>');
+                $.each(siVHJson['datastores'].split('\t'), function (index, value) {
+                    $(_siVHDatastores + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
 
-            $(_siVHNics).html('NICs:<ul></ul>');
-            $.each(siVHJson['nics'].split('\t'), function (index, value) {
-                $(_siVHNics + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siVHDiskPaths).html('Paths:<ul></ul>');
+                $.each(siVHJson['vDiskPaths'].split('\t'), function (index, value) {
+                    $(_siVHDiskPaths + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
 
-            if (!$(_siVHComments).is(':focus')) {
-                $(_siVHComments).val(siVHJson['comments']);
+            try {
+                $(_siVHNics).html('NICs:<ul></ul>');
+                $.each(siVHJson['nics'].split('\t'), function (index, value) {
+                    $(_siVHNics + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
+
+            try {
+                if (!$(_siVHComments).is(':focus')) {
+                    $(_siVHComments).val(siVHJson['comments']);
+                }
+            } catch (ignoreEx) { }
+
+            if (!siVHJson['responsive']) {
+                throw $(_siVHHostname).text() + ' NOT RESPONDING';
             }
         } catch (ex) {
+            $(_siVHHostname).text(ex);
+            $(_siVHTimestamp).text('(last fetch attempt: ' + (new Date()).toLocaleString() + ')');
             handleError("Failed updating system information (vhost reachable?). See the console for details.", ex);
         };
     };
@@ -288,50 +320,82 @@ var systemInformation = function (siJson, containerId) {
                 $(_siIcon).attr('src', 'img/server.svg');
             }
 
-            _hostname = siJson['hostname'];
-            $(_siHostname).text(_hostname);
-            $(_siIPs).text(siJson['ips'].replace(/\t/g, ', '));
+            try {
+                _hostname = siJson['hostname'];
+                $(_siHostname).text(_hostname);
+            } catch (ignoreEx) { }
 
-            var ts = siJson['timeStampInSecondsSinceEpochUtc'];
-            if (ts < 10000000000) {
-                ts *= 1000 //seconds to ms.
-            }
+            try {
+                $(_siIPs).text(siJson['ips'].replace(/\t/g, ', '));
+            } catch (ignoreEx) { }
 
-            ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
-            $(_siTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
+            try {
+                var ts = siJson['timeStampInSecondsSinceEpochUtc'];
+                if (ts < 10000000000) {
+                    ts *= 1000 //seconds to ms.
+                }
 
+                ts = new Date(ts + (new Date().getTimezoneOffset() * -1)); //Utc to timezone.
+                $(_siTimestamp).text('(last updated: ' + ts.toLocaleString() + ')');
+            } catch (ignoreEx) { }
 
-            $(_siOS).html('OS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['os']);
-            $(_siSystem).html('System:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['system']);
-            $(_siBaseboard).html('Baseboard:&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;' + siJson['baseboard']);
-            $(_siBios).html('BIOS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bios']);
-            $(_siBmcIp).html('BMC IP:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bmcIp']);
+            try {
+                $(_siOS).html('OS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;' + siJson['os']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siSystem).html('System:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['system']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siBaseboard).html('Baseboard:&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;' + siJson['baseboard']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siBios).html('BIOS:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bios']);
+            } catch (ignoreEx) { }
+            try {
+                $(_siBmcIp).html('BMC IP:&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;' + siJson['bmcIp']);
+            } catch (ignoreEx) { }
 
-            $(_siProcessors).html('Processors:<ul></ul>');
-            $.each(siJson['processors'].split('\t'), function (index, value) {
-                $(_siProcessors + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siProcessors).html('Processors:<ul></ul>');
+                $.each(siJson['processors'].split('\t'), function (index, value) {
+                    $(_siProcessors + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
 
-            $(_siMemoryModules).html('Memory modules:<ul></ul>');
-            $.each(siJson['memoryModules'].split('\t'), function (index, value) {
-                $(_siMemoryModules + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siMemoryModules).html('Memory modules:<ul></ul>');
+                $.each(siJson['memoryModules'].split('\t'), function (index, value) {
+                    $(_siMemoryModules + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
 
-            $(_siDisks).html('Disks:<ul></ul>');
-            $.each(siJson['disks'].split('\t'), function (index, value) {
-                $(_siDisks + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siDisks).html('Disks:<ul></ul>');
+                $.each(siJson['disks'].split('\t'), function (index, value) {
+                    $(_siDisks + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
 
-            $(_siNics).html('NICs:<ul></ul>');
-            $.each(siJson['nics'].split('\t'), function (index, value) {
-                $(_siNics + ' ul').append('<li>' + value + '</li>');
-            });
+            try {
+                $(_siNics).html('NICs:<ul></ul>');
+                $.each(siJson['nics'].split('\t'), function (index, value) {
+                    $(_siNics + ' ul').append('<li>' + value + '</li>');
+                });
+            } catch (ignoreEx) { }
 
-            if (!$(_siComments).is(':focus')) {
-                $(_siComments).val(siJson['comments']);
+            try {
+                if (!$(_siComments).is(':focus')) {
+                    $(_siComments).val(siJson['comments']);
+                }
+            } catch (ignoreEx) { }
+
+            if (!siJson['responsive']) {
+                throw $(_siHostname).text() + ' NOT RESPONDING';
             }
         } catch (ex) {
-            handleError("Failed updating system information (machine reachable?). See the console for details.", ex);
+            $(_siHostname).text(ex);           
+            $(_siTimestamp).text('(last fetch attempt: ' + (new Date()).toLocaleString() + ')');
+             handleError("Failed updating system information (machine reachable?). See the console for details.", ex);
         };
     };
 
